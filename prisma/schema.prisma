@@ -1,0 +1,61 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        String    @id @default(dbgenerated("gen_random_uuid()"))
+  email     String    @unique
+  name      String?
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @default(now()) @map("updated_at")
+  password  Password?
+
+  @@map("users")
+}
+
+model Password {
+  hash String
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId String @unique
+
+  @@map("passwords")
+}
+
+model Clave {
+  id          String   @id @default(dbgenerated("gen_random_uuid()"))
+  country     String
+  latitude    String
+  longitude   String
+  createdAt   DateTime @default(now()) @map("created_at")
+  description String?
+  guia        String
+  name        String
+  videoUrl    String?  @map("video_url")
+  Route       RouteSteps[]
+
+  @@map("claves")
+}
+
+model Route {
+  id        String   @id @default(dbgenerated("gen_random_uuid()"))
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+  steps     RouteSteps[]
+  @@map("routes")
+}
+
+model RouteSteps {
+  id        String   @id @default(dbgenerated("gen_random_uuid()"))
+  createdAt DateTime @default(now()) @map("created_at")
+  clave     Clave @relation(fields: [claveId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  claveId   String @map("clave_id")
+  route     Route @relation(fields: [routeId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  routeId   String @map("route_id")
+  @@map("route_steps")
+}
